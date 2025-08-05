@@ -57,6 +57,7 @@
 <body>
   <h1>AutoCall WebApp</h1>
   <video id="video" autoplay playsinline></video>
+  <button id="flashBtn" onclick="toggleFlash()" style="display: none;">Activar flash 🔦</button>
   <button id="scanBtn" onclick="scanAndCall()">Detectar</button>
   <button id="retryBtn" onclick="startCamera()" style="display: none;">Reintentar</button>
   <canvas id="canvas" style="display: none;"></canvas>
@@ -71,36 +72,65 @@
     const retryBtn = document.getElementById('retryBtn');
 
     let cameraStream = null;
+    let cameraTrack = null;
+    let torchOn = false;
 
-    function startCamera() {
-      navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { exact: "environment" },
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        }
-      })
-        .then(stream => {
-          cameraStream = stream;
-          video.srcObject = stream;
-          video.style.display = "block";
-          scanBtn.style.display = "inline-block";
-          retryBtn.style.display = "none";
-          resultDiv.innerText = "";
-        })
-        .catch(err => {
-          alert("Error al acceder a la cámara: " + err);
-        });
+
+function startCamera() {
+  navigator.mediaDevices.getUserMedia({
+    video: {
+      facingMode: "environment",
+      width: { ideal: 1280 },
+      height: { ideal: 720 }
     }
+  })
+    .then(stream => {
+      cameraStream = stream;
+      video.srcObject = stream;
+      video.style.display = "block";
+      scanBtn.style.display = "inline-block";
+      retryBtn.style.display = "none";
+      flashBtn.style.display = "none";
+      resultDiv.innerText = "";
 
-    function stopCamera() {
-      if (cameraStream) {
-        cameraStream.getTracks().forEach(track => track.stop());
-        cameraStream = null;
-        video.srcObject = null;
-        video.style.display = "none";
+      // Obtener la pista de vídeo
+      cameraTrack = stream.getVideoTracks()[0];
+
+      // Comprobar si el dispositivo permite usar el flash
+      if (cameraTrack.getCapabilities().torch) {
+        flashBtn.style.display = "inline-block";
       }
-    }
+    })
+    .catch(err => {
+      alert("Error al acceder a la cámara: " + err);
+    });
+}
+
+function toggleFlash() {
+  if (!cameraTrack) return;
+
+  torchOn = !torchOn;
+
+  cameraTrack.applyConstraints({
+    advanced: [{ torch: torchOn }]
+  }).then(() => {
+    flashBtn.textContent = torchOn ? "Desactivar flash 🔌" : "Activar flash 🔦";
+  }).catch(err => {
+    alert("No se pudo activar el flash: " + err);
+  });
+}
+
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+    video.srcObject = null;
+    video.style.display = "none";
+    flashBtn.style.display = "none";
+    torchOn = false;
+  }
+}
 
     function scanAndCall() {
       scanBtn.style.display = "none";
