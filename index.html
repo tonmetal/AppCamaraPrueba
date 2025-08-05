@@ -66,9 +66,9 @@
 
       resultDiv.innerText = "Procesando imagen...";
 
-      Tesseract.recognize(canvas, 'eng')
+      Tesseract.recognize(canvas, 'spa')
         .then(({ data: { text } }) => {
-          const match = text.match(/(\+34)?\s*\d{9}/);
+          const match = text.match(/\b[67]\d{8}\b/);
           if (match) {
             const phone = match[0].replace(/\s+/g, '');
             resultDiv.innerHTML = `Número detectado: <b>${phone}</b><br><a href="tel:${phone}">Llamar ahora</a>`;
