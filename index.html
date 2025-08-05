@@ -50,7 +50,7 @@
     }
 
     #retryBtn{
-        background-color: #333;
+        background-color: #302c2c;
     }
   </style>
 </head>
@@ -118,7 +118,7 @@
           const match = text.match(/\b[67]\d{8}\b/);
           if (match) {
             const phone = match[0].replace(/\s+/g, '');
-            resultDiv.innerHTML = `<h3>Número detectado: <b>${phone}</b><br></h3> <a class="resutado" href="tel:${phone}">Llamar ahora</a>`;
+            resultDiv.innerHTML = `<h2>Número detectado: <b>${phone}</b><br></h2> <a class="resultado" href="tel:${phone}">Llamar ahora</a>`;
           } else {
             resultDiv.innerText = "No se detectó ningún número de teléfono.";
           }
