@@ -36,12 +36,28 @@
       font-size: 18px;
       color: #333;
     }
+
+    .resultado{
+        text-decoration: none;
+        padding: 12px 24px;
+        font-size: 18px;
+        border: none;
+        border-radius: 5px;
+        background-color: #4CAF50;
+        color: white;
+        cursor: pointer;
+        margin: 10px;
+    }
+
+    #retryBtn{
+        background-color: #333;
+    }
   </style>
 </head>
 <body>
   <h1>AutoCall WebApp</h1>
   <video id="video" autoplay playsinline></video>
-  <button id="scanBtn" onclick="scanAndCall()">Detectar y llamar</button>
+  <button id="scanBtn" onclick="scanAndCall()">Detectar</button>
   <button id="retryBtn" onclick="startCamera()" style="display: none;">Reintentar</button>
   <canvas id="canvas" style="display: none;"></canvas>
   <div id="result"></div>
@@ -88,7 +104,7 @@
 
     function scanAndCall() {
       scanBtn.style.display = "none";
-      resultDiv.innerText = "Procesando imagen...";
+      resultDiv.innerText = "Detectando número...";
 
       const context = canvas.getContext('2d');
       canvas.width = video.videoWidth;
@@ -102,7 +118,7 @@
           const match = text.match(/\b[67]\d{8}\b/);
           if (match) {
             const phone = match[0].replace(/\s+/g, '');
-            resultDiv.innerHTML = `Número detectado: <b>${phone}</b><br><a href="tel:${phone}">Llamar ahora</a>`;
+            resultDiv.innerHTML = `<h3>Número detectado: <b>${phone}</b><br></h3> <a class="resutado" href="tel:${phone}">Llamar ahora</a>`;
           } else {
             resultDiv.innerText = "No se detectó ningún número de teléfono.";
           }
