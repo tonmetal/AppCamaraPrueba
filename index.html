@@ -1,0 +1,97 @@
+<!DOCTYPE html><html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoCall WebApp</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f3f3f3;
+      padding: 20px;
+    }
+    video {
+      width: 100%;
+      max-width: 400px;
+      border: 2px solid #333;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+      margin: 10px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #result {
+      margin-top: 15px;
+      font-size: 18px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>AutoCall WebApp</h1>
+  <button onclick="startCamera()">Activar cámara</button>
+  <video id="video" autoplay></video>
+  <button onclick="scanAndCall()">Detectar y llamar</button>
+  <canvas id="canvas" style="display: none;"></canvas>
+  <div id="result"></div>  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const resultDiv = document.getElementById('result');
+
+    function startCamera() {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          video.srcObject = stream;
+        })
+        .catch(err => {
+          alert("Error al acceder a la cámara: " + err);
+        });
+    }
+
+    function scanAndCall() {
+      const context = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      resultDiv.innerText = "Procesando imagen...";
+
+      Tesseract.recognize(canvas, 'eng')
+        .then(({ data: { text } }) => {
+          const match = text.match(/(\+34)?\s*\d{9}/);
+          if (match) {
+            const phone = match[0].replace(/\s+/g, '');
+            resultDiv.innerHTML = `Número detectado: <b>${phone}</b><br><a href="tel:${phone}">Llamar ahora</a>`;
+          } else {
+            resultDiv.innerText = "No se detectó ningún número de teléfono.";
+          }
+        })
+        .catch(err => {
+          resultDiv.innerText = "Error en el reconocimiento de texto: " + err;
+        });
+    }
+  </script></body>
+</html><!DOCTYPE html>
+
+<html>
+<head>
+  <meta http-equiv="CONTENT-TYPE" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" href="styles/style.css"/>
+  <title>Hello, World!</title>
+</head>
+<body>
+  <h1>
+    Hello, World!
+  </h1>
+</body>
+</html>
