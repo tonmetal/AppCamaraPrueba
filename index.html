@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="es">
+<!DOCTYPE html>
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,32 +40,62 @@
 </head>
 <body>
   <h1>AutoCall WebApp</h1>
-  <button onclick="startCamera()">Activar cámara</button>
-  <video id="video" autoplay></video>
-  <button onclick="scanAndCall()">Detectar y llamar</button>
+  <video id="video" autoplay playsinline></video>
+  <button id="scanBtn" onclick="scanAndCall()">Detectar y llamar</button>
+  <button id="retryBtn" onclick="startCamera()" style="display: none;">Reintentar</button>
   <canvas id="canvas" style="display: none;"></canvas>
-  <div id="result"></div>  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>  <script>
+  <div id="result"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+  <script>
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const resultDiv = document.getElementById('result');
+    const scanBtn = document.getElementById('scanBtn');
+    const retryBtn = document.getElementById('retryBtn');
+
+    let cameraStream = null;
 
     function startCamera() {
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" } } })
+      navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { exact: "environment" },
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      })
         .then(stream => {
+          cameraStream = stream;
           video.srcObject = stream;
+          video.style.display = "block";
+          scanBtn.style.display = "inline-block";
+          retryBtn.style.display = "none";
+          resultDiv.innerText = "";
         })
         .catch(err => {
           alert("Error al acceder a la cámara: " + err);
         });
     }
 
+    function stopCamera() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+        video.srcObject = null;
+        video.style.display = "none";
+      }
+    }
+
     function scanAndCall() {
+      scanBtn.style.display = "none";
+      resultDiv.innerText = "Procesando imagen...";
+
       const context = canvas.getContext('2d');
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      resultDiv.innerText = "Procesando imagen...";
+      stopCamera(); // apaga la cámara mientras procesa
 
       Tesseract.recognize(canvas, 'spa')
         .then(({ data: { text } }) => {
@@ -75,9 +106,18 @@
           } else {
             resultDiv.innerText = "No se detectó ningún número de teléfono.";
           }
+          retryBtn.style.display = "inline-block"; // mostrar botón reintentar
         })
         .catch(err => {
           resultDiv.innerText = "Error en el reconocimiento de texto: " + err;
+          retryBtn.style.display = "inline-block"; // mostrar botón reintentar
         });
     }
-  </script></body>
+
+    // Activar cámara automáticamente al abrir la página
+    window.addEventListener('DOMContentLoaded', () => {
+      startCamera();
+    });
+  </script>
+</body>
+</html>
